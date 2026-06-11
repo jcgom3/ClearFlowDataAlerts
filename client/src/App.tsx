@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileUploadPanel } from "./components/upload/FileUploadPanel";
 import { FilteredRowsTable } from "./components/tables/FilteredRowsTable";
 import type { SpreadsheetRow } from "./types/excel.types";
@@ -6,9 +6,12 @@ import {
   createPresignedUploadUrl,
   uploadFileToS3,
   saveUploadRecord,
+  getLatestUpload,
 } from "./lib/api";
 import { getRowsDateRange } from "./features/excel/getDateRanges";
 import { RowDetailsModal } from "./components/modals/RowDetailsModal";
+import { parseExcelBlob } from "./features/excel/parseExcelFile";
+import { filterRows } from "./features/excel/filterRows";
 
 type UploadedFileState = {
   file: File;
@@ -24,6 +27,68 @@ function App() {
   const [activeResultsTab, setActiveResultsTab] = useState<"filtered" | "raw">(
     "filtered"
   );
+  
+  const [latestUploadStatus, setLatestUploadStatus] = useState<string | null>(
+  null
+);
+
+
+
+
+  useEffect(() => {
+  async function loadLatestUpload() {
+    setLatestUploadStatus("Loading latest uploaded file...");
+
+    try {
+      const latestUpload = await getLatestUpload();
+
+      if (!latestUpload) {
+        setLatestUploadStatus(null);
+        return;
+      }
+
+      const fileResponse = await fetch(latestUpload.downloadUrl);
+
+      if (!fileResponse.ok) {
+        throw new Error("Unable to download latest uploaded file from S3.");
+      }
+
+      const blob = await fileResponse.blob();
+
+      const parsed = await parseExcelBlob(blob, latestUpload.upload.fileName);
+      const filteredRows = filterRows(parsed.rows);
+
+      const restoredFile = new File([blob], latestUpload.upload.fileName, {
+        type:
+          blob.type ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      setUploadedFile({
+        file: restoredFile,
+        fileName: parsed.fileName,
+        sheetName: latestUpload.upload.sheetName ?? parsed.sheetName,
+        rawRows: parsed.rows,
+        filteredRows,
+      });
+
+      setActiveResultsTab("filtered");
+      setSelectedRow(null);
+      setLatestUploadStatus(
+        `Loaded latest upload: ${latestUpload.upload.fileName}`
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to load latest upload.";
+
+      setLatestUploadStatus(message);
+    }
+  }
+
+  loadLatestUpload();
+}, []);
 
   async function handleSaveFileToS3() {
     if (!uploadedFile) return;
@@ -121,6 +186,12 @@ function App() {
               setS3UploadStatus(null);
             }}
           />
+
+          {latestUploadStatus && (
+  <p className="rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm text-slate-300">
+    {latestUploadStatus}
+  </p>
+)}
 
           {uploadedFile && (
             <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">

@@ -24891,284 +24891,6 @@ var require_express2 = __commonJS({
   }
 });
 
-// node_modules/object-assign/index.js
-var require_object_assign = __commonJS({
-  "node_modules/object-assign/index.js"(exports2, module2) {
-    "use strict";
-    var getOwnPropertySymbols = Object.getOwnPropertySymbols;
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-    var propIsEnumerable = Object.prototype.propertyIsEnumerable;
-    function toObject(val) {
-      if (val === null || val === void 0) {
-        throw new TypeError("Object.assign cannot be called with null or undefined");
-      }
-      return Object(val);
-    }
-    function shouldUseNative() {
-      try {
-        if (!Object.assign) {
-          return false;
-        }
-        var test1 = new String("abc");
-        test1[5] = "de";
-        if (Object.getOwnPropertyNames(test1)[0] === "5") {
-          return false;
-        }
-        var test2 = {};
-        for (var i5 = 0; i5 < 10; i5++) {
-          test2["_" + String.fromCharCode(i5)] = i5;
-        }
-        var order2 = Object.getOwnPropertyNames(test2).map(function(n2) {
-          return test2[n2];
-        });
-        if (order2.join("") !== "0123456789") {
-          return false;
-        }
-        var test3 = {};
-        "abcdefghijklmnopqrst".split("").forEach(function(letter) {
-          test3[letter] = letter;
-        });
-        if (Object.keys(Object.assign({}, test3)).join("") !== "abcdefghijklmnopqrst") {
-          return false;
-        }
-        return true;
-      } catch (err2) {
-        return false;
-      }
-    }
-    module2.exports = shouldUseNative() ? Object.assign : function(target, source) {
-      var from;
-      var to = toObject(target);
-      var symbols;
-      for (var s = 1; s < arguments.length; s++) {
-        from = Object(arguments[s]);
-        for (var key in from) {
-          if (hasOwnProperty.call(from, key)) {
-            to[key] = from[key];
-          }
-        }
-        if (getOwnPropertySymbols) {
-          symbols = getOwnPropertySymbols(from);
-          for (var i5 = 0; i5 < symbols.length; i5++) {
-            if (propIsEnumerable.call(from, symbols[i5])) {
-              to[symbols[i5]] = from[symbols[i5]];
-            }
-          }
-        }
-      }
-      return to;
-    };
-  }
-});
-
-// node_modules/cors/lib/index.js
-var require_lib3 = __commonJS({
-  "node_modules/cors/lib/index.js"(exports2, module2) {
-    (function() {
-      "use strict";
-      var assign = require_object_assign();
-      var vary = require_vary();
-      var defaults = {
-        origin: "*",
-        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-        preflightContinue: false,
-        optionsSuccessStatus: 204
-      };
-      function isString(s) {
-        return typeof s === "string" || s instanceof String;
-      }
-      function isOriginAllowed(origin, allowedOrigin) {
-        if (Array.isArray(allowedOrigin)) {
-          for (var i5 = 0; i5 < allowedOrigin.length; ++i5) {
-            if (isOriginAllowed(origin, allowedOrigin[i5])) {
-              return true;
-            }
-          }
-          return false;
-        } else if (isString(allowedOrigin)) {
-          return origin === allowedOrigin;
-        } else if (allowedOrigin instanceof RegExp) {
-          return allowedOrigin.test(origin);
-        } else {
-          return !!allowedOrigin;
-        }
-      }
-      function configureOrigin(options, req) {
-        var requestOrigin = req.headers.origin, headers = [], isAllowed;
-        if (!options.origin || options.origin === "*") {
-          headers.push([{
-            key: "Access-Control-Allow-Origin",
-            value: "*"
-          }]);
-        } else if (isString(options.origin)) {
-          headers.push([{
-            key: "Access-Control-Allow-Origin",
-            value: options.origin
-          }]);
-          headers.push([{
-            key: "Vary",
-            value: "Origin"
-          }]);
-        } else {
-          isAllowed = isOriginAllowed(requestOrigin, options.origin);
-          headers.push([{
-            key: "Access-Control-Allow-Origin",
-            value: isAllowed ? requestOrigin : false
-          }]);
-          headers.push([{
-            key: "Vary",
-            value: "Origin"
-          }]);
-        }
-        return headers;
-      }
-      function configureMethods(options) {
-        var methods = options.methods;
-        if (methods.join) {
-          methods = options.methods.join(",");
-        }
-        return {
-          key: "Access-Control-Allow-Methods",
-          value: methods
-        };
-      }
-      function configureCredentials(options) {
-        if (options.credentials === true) {
-          return {
-            key: "Access-Control-Allow-Credentials",
-            value: "true"
-          };
-        }
-        return null;
-      }
-      function configureAllowedHeaders(options, req) {
-        var allowedHeaders = options.allowedHeaders || options.headers;
-        var headers = [];
-        if (!allowedHeaders) {
-          allowedHeaders = req.headers["access-control-request-headers"];
-          headers.push([{
-            key: "Vary",
-            value: "Access-Control-Request-Headers"
-          }]);
-        } else if (allowedHeaders.join) {
-          allowedHeaders = allowedHeaders.join(",");
-        }
-        if (allowedHeaders && allowedHeaders.length) {
-          headers.push([{
-            key: "Access-Control-Allow-Headers",
-            value: allowedHeaders
-          }]);
-        }
-        return headers;
-      }
-      function configureExposedHeaders(options) {
-        var headers = options.exposedHeaders;
-        if (!headers) {
-          return null;
-        } else if (headers.join) {
-          headers = headers.join(",");
-        }
-        if (headers && headers.length) {
-          return {
-            key: "Access-Control-Expose-Headers",
-            value: headers
-          };
-        }
-        return null;
-      }
-      function configureMaxAge(options) {
-        var maxAge = (typeof options.maxAge === "number" || options.maxAge) && options.maxAge.toString();
-        if (maxAge && maxAge.length) {
-          return {
-            key: "Access-Control-Max-Age",
-            value: maxAge
-          };
-        }
-        return null;
-      }
-      function applyHeaders(headers, res) {
-        for (var i5 = 0, n2 = headers.length; i5 < n2; i5++) {
-          var header = headers[i5];
-          if (header) {
-            if (Array.isArray(header)) {
-              applyHeaders(header, res);
-            } else if (header.key === "Vary" && header.value) {
-              vary(res, header.value);
-            } else if (header.value) {
-              res.setHeader(header.key, header.value);
-            }
-          }
-        }
-      }
-      function cors2(options, req, res, next) {
-        var headers = [], method = req.method && req.method.toUpperCase && req.method.toUpperCase();
-        if (method === "OPTIONS") {
-          headers.push(configureOrigin(options, req));
-          headers.push(configureCredentials(options));
-          headers.push(configureMethods(options));
-          headers.push(configureAllowedHeaders(options, req));
-          headers.push(configureMaxAge(options));
-          headers.push(configureExposedHeaders(options));
-          applyHeaders(headers, res);
-          if (options.preflightContinue) {
-            next();
-          } else {
-            res.statusCode = options.optionsSuccessStatus;
-            res.setHeader("Content-Length", "0");
-            res.end();
-          }
-        } else {
-          headers.push(configureOrigin(options, req));
-          headers.push(configureCredentials(options));
-          headers.push(configureExposedHeaders(options));
-          applyHeaders(headers, res);
-          next();
-        }
-      }
-      function middlewareWrapper(o2) {
-        var optionsCallback = null;
-        if (typeof o2 === "function") {
-          optionsCallback = o2;
-        } else {
-          optionsCallback = function(req, cb) {
-            cb(null, o2);
-          };
-        }
-        return function corsMiddleware(req, res, next) {
-          optionsCallback(req, function(err2, options) {
-            if (err2) {
-              next(err2);
-            } else {
-              var corsOptions = assign({}, defaults, options);
-              var originCallback = null;
-              if (corsOptions.origin && typeof corsOptions.origin === "function") {
-                originCallback = corsOptions.origin;
-              } else if (corsOptions.origin) {
-                originCallback = function(origin, cb) {
-                  cb(null, corsOptions.origin);
-                };
-              }
-              if (originCallback) {
-                originCallback(req.headers.origin, function(err22, origin) {
-                  if (err22 || !origin) {
-                    next(err22);
-                  } else {
-                    corsOptions.origin = origin;
-                    cors2(corsOptions, req, res, next);
-                  }
-                });
-              } else {
-                next();
-              }
-            }
-          });
-        };
-      }
-      module2.exports = middlewareWrapper;
-    })();
-  }
-});
-
 // node_modules/@aws-sdk/core/dist-es/submodules/client/emitWarningIfUnsupportedVersion.js
 var state, emitWarningIfUnsupportedVersion;
 var init_emitWarningIfUnsupportedVersion = __esm({
@@ -62203,7 +61925,7 @@ var require_dist_cjs21 = __commonJS({
       ];
     }).s("AmazonS3", "GetObjectAttributes", {}).n("S3Client", "GetObjectAttributesCommand").sc(schemas_0.GetObjectAttributes$).build() {
     };
-    var GetObjectCommand = class extends client.Command.classBuilder().ep({
+    var GetObjectCommand2 = class extends client.Command.classBuilder().ep({
       ...commonParams5,
       Bucket: { type: "contextParams", name: "Bucket" },
       Key: { type: "contextParams", name: "Key" }
@@ -63017,7 +62739,7 @@ var require_dist_cjs21 = __commonJS({
       GetBucketTaggingCommand,
       GetBucketVersioningCommand,
       GetBucketWebsiteCommand,
-      GetObjectCommand,
+      GetObjectCommand: GetObjectCommand2,
       GetObjectAclCommand,
       GetObjectAttributesCommand,
       GetObjectLegalHoldCommand,
@@ -63583,7 +63305,7 @@ var require_dist_cjs21 = __commonJS({
     exports2.GetBucketWebsiteCommand = GetBucketWebsiteCommand;
     exports2.GetObjectAclCommand = GetObjectAclCommand;
     exports2.GetObjectAttributesCommand = GetObjectAttributesCommand;
-    exports2.GetObjectCommand = GetObjectCommand;
+    exports2.GetObjectCommand = GetObjectCommand2;
     exports2.GetObjectLegalHoldCommand = GetObjectLegalHoldCommand;
     exports2.GetObjectLockConfigurationCommand = GetObjectLockConfigurationCommand;
     exports2.GetObjectRetentionCommand = GetObjectRetentionCommand;
@@ -63717,181 +63439,8 @@ var require_dist_cjs21 = __commonJS({
   }
 });
 
-// node_modules/@aws-sdk/s3-request-presigner/dist-cjs/index.js
-var require_dist_cjs22 = __commonJS({
-  "node_modules/@aws-sdk/s3-request-presigner/dist-cjs/index.js"(exports2) {
-    "use strict";
-    var util = (init_util2(), __toCommonJS(util_exports2));
-    var endpoints = (init_endpoints(), __toCommonJS(endpoints_exports));
-    var protocols = (init_protocols(), __toCommonJS(protocols_exports));
-    var signatureV4MultiRegion = require_dist_cjs8();
-    var UNSIGNED_PAYLOAD = "UNSIGNED-PAYLOAD";
-    var SHA256_HEADER = "X-Amz-Content-Sha256";
-    var S3RequestPresigner = class {
-      signer;
-      constructor(options) {
-        const resolvedOptions = {
-          service: options.signingName || options.service || "s3",
-          uriEscapePath: options.uriEscapePath || false,
-          applyChecksum: options.applyChecksum || false,
-          ...options
-        };
-        this.signer = new signatureV4MultiRegion.SignatureV4MultiRegion(resolvedOptions);
-      }
-      presign(requestToSign, { unsignableHeaders = /* @__PURE__ */ new Set(), hoistableHeaders = /* @__PURE__ */ new Set(), unhoistableHeaders = /* @__PURE__ */ new Set(), ...options } = {}) {
-        this.prepareRequest(requestToSign, {
-          unsignableHeaders,
-          unhoistableHeaders,
-          hoistableHeaders
-        });
-        return this.signer.presign(requestToSign, {
-          expiresIn: 900,
-          unsignableHeaders,
-          unhoistableHeaders,
-          ...options
-        });
-      }
-      presignWithCredentials(requestToSign, credentials, { unsignableHeaders = /* @__PURE__ */ new Set(), hoistableHeaders = /* @__PURE__ */ new Set(), unhoistableHeaders = /* @__PURE__ */ new Set(), ...options } = {}) {
-        this.prepareRequest(requestToSign, {
-          unsignableHeaders,
-          unhoistableHeaders,
-          hoistableHeaders
-        });
-        return this.signer.presignWithCredentials(requestToSign, credentials, {
-          expiresIn: 900,
-          unsignableHeaders,
-          unhoistableHeaders,
-          ...options
-        });
-      }
-      prepareRequest(requestToSign, { unsignableHeaders = /* @__PURE__ */ new Set(), unhoistableHeaders = /* @__PURE__ */ new Set(), hoistableHeaders = /* @__PURE__ */ new Set() } = {}) {
-        unsignableHeaders.add("content-type");
-        Object.keys(requestToSign.headers).map((header) => header.toLowerCase()).filter((header) => header.startsWith("x-amz-server-side-encryption")).forEach((header) => {
-          if (!hoistableHeaders.has(header)) {
-            unhoistableHeaders.add(header);
-          }
-        });
-        requestToSign.headers[SHA256_HEADER] = UNSIGNED_PAYLOAD;
-        const currentHostHeader = requestToSign.headers.host;
-        const port = requestToSign.port;
-        const expectedHostHeader = `${requestToSign.hostname}${requestToSign.port != null ? ":" + port : ""}`;
-        if (!currentHostHeader || currentHostHeader === requestToSign.hostname && requestToSign.port != null) {
-          requestToSign.headers.host = expectedHostHeader;
-        }
-      }
-    };
-    var getSignedUrl2 = async (client, command, options = {}) => {
-      let s3Presigner;
-      let region;
-      if (typeof client.config.endpointProvider === "function") {
-        const endpointV2 = await endpoints.getEndpointFromInstructions(command.input, command.constructor, client.config);
-        const authScheme = endpointV2.properties?.authSchemes?.[0];
-        if (authScheme?.name === "sigv4a") {
-          region = authScheme?.signingRegionSet?.join(",");
-        } else {
-          region = authScheme?.signingRegion;
-        }
-        s3Presigner = new S3RequestPresigner({
-          ...client.config,
-          signingName: authScheme?.signingName,
-          region: async () => region
-        });
-      } else {
-        s3Presigner = new S3RequestPresigner(client.config);
-      }
-      const presignInterceptMiddleware = (next, context) => async (args) => {
-        const { request } = args;
-        if (!protocols.HttpRequest.isInstance(request)) {
-          throw new Error("Request to be presigned is not an valid HTTP request.");
-        }
-        delete request.headers["amz-sdk-invocation-id"];
-        delete request.headers["amz-sdk-request"];
-        delete request.headers["x-amz-user-agent"];
-        let presigned2;
-        const presignerOptions = {
-          ...options,
-          signingRegion: options.signingRegion ?? context["signing_region"] ?? region,
-          signingService: options.signingService ?? context["signing_service"]
-        };
-        if (context.s3ExpressIdentity) {
-          presigned2 = await s3Presigner.presignWithCredentials(request, context.s3ExpressIdentity, presignerOptions);
-        } else {
-          presigned2 = await s3Presigner.presign(request, presignerOptions);
-        }
-        return {
-          response: {},
-          output: {
-            $metadata: { httpStatusCode: 200 },
-            presigned: presigned2
-          }
-        };
-      };
-      const middlewareName = "presignInterceptMiddleware";
-      const clientStack = client.middlewareStack.clone();
-      clientStack.addRelativeTo(presignInterceptMiddleware, {
-        name: middlewareName,
-        relation: "before",
-        toMiddleware: "awsAuthMiddleware",
-        override: true
-      });
-      const handler2 = command.resolveMiddleware(clientStack, client.config, {});
-      const { output } = await handler2({ input: command.input });
-      const { presigned } = output;
-      return util.formatUrl(presigned);
-    };
-    exports2.S3RequestPresigner = S3RequestPresigner;
-    exports2.getSignedUrl = getSignedUrl2;
-  }
-});
-
-// node_modules/dotenv/lib/env-options.js
-var require_env_options = __commonJS({
-  "node_modules/dotenv/lib/env-options.js"(exports2, module2) {
-    var options = {};
-    if (process.env.DOTENV_CONFIG_ENCODING != null) {
-      options.encoding = process.env.DOTENV_CONFIG_ENCODING;
-    }
-    if (process.env.DOTENV_CONFIG_PATH != null) {
-      options.path = process.env.DOTENV_CONFIG_PATH;
-    }
-    if (process.env.DOTENV_CONFIG_QUIET != null) {
-      options.quiet = process.env.DOTENV_CONFIG_QUIET;
-    }
-    if (process.env.DOTENV_CONFIG_DEBUG != null) {
-      options.debug = process.env.DOTENV_CONFIG_DEBUG;
-    }
-    if (process.env.DOTENV_CONFIG_OVERRIDE != null) {
-      options.override = process.env.DOTENV_CONFIG_OVERRIDE;
-    }
-    if (process.env.DOTENV_CONFIG_DOTENV_KEY != null) {
-      options.DOTENV_KEY = process.env.DOTENV_CONFIG_DOTENV_KEY;
-    }
-    module2.exports = options;
-  }
-});
-
-// node_modules/dotenv/lib/cli-options.js
-var require_cli_options = __commonJS({
-  "node_modules/dotenv/lib/cli-options.js"(exports2, module2) {
-    var re = /^dotenv_config_(encoding|path|quiet|debug|override|DOTENV_KEY)=(.+)$/;
-    module2.exports = function optionMatcher(args) {
-      const options = args.reduce(function(acc, cur) {
-        const matches = cur.match(re);
-        if (matches) {
-          acc[matches[1]] = matches[2];
-        }
-        return acc;
-      }, {});
-      if (!("quiet" in options)) {
-        options.quiet = "true";
-      }
-      return options;
-    };
-  }
-});
-
 // node_modules/@aws-sdk/util-dynamodb/dist-cjs/index.js
-var require_dist_cjs23 = __commonJS({
+var require_dist_cjs22 = __commonJS({
   "node_modules/@aws-sdk/util-dynamodb/dist-cjs/index.js"(exports2) {
     "use strict";
     var NumberValue = class _NumberValue {
@@ -64719,7 +64268,7 @@ var require_lru_cache = __commonJS({
 });
 
 // node_modules/@aws-sdk/endpoint-cache/dist-cjs/index.js
-var require_dist_cjs24 = __commonJS({
+var require_dist_cjs23 = __commonJS({
   "node_modules/@aws-sdk/endpoint-cache/dist-cjs/index.js"(exports2) {
     "use strict";
     var LRUCache = require_lru_cache();
@@ -64781,11 +64330,11 @@ var require_dist_cjs24 = __commonJS({
 });
 
 // node_modules/@aws-sdk/middleware-endpoint-discovery/dist-cjs/index.js
-var require_dist_cjs25 = __commonJS({
+var require_dist_cjs24 = __commonJS({
   "node_modules/@aws-sdk/middleware-endpoint-discovery/dist-cjs/index.js"(exports2) {
     "use strict";
     var protocols = (init_protocols(), __toCommonJS(protocols_exports));
-    var endpointCache = require_dist_cjs24();
+    var endpointCache = require_dist_cjs23();
     var ENV_ENDPOINT_DISCOVERY = ["AWS_ENABLE_ENDPOINT_DISCOVERY", "AWS_ENDPOINT_DISCOVERY_ENABLED"];
     var CONFIG_ENDPOINT_DISCOVERY = "endpoint_discovery_enabled";
     var isFalsy = (value) => ["false", "0"].indexOf(value) >= 0;
@@ -69438,7 +68987,7 @@ var require_package2 = __commonJS({
 });
 
 // node_modules/@aws-sdk/dynamodb-codec/dist-cjs/index.js
-var require_dist_cjs26 = __commonJS({
+var require_dist_cjs25 = __commonJS({
   "node_modules/@aws-sdk/dynamodb-codec/dist-cjs/index.js"(exports2) {
     "use strict";
     var protocols = (init_protocols2(), __toCommonJS(protocols_exports2));
@@ -69915,7 +69464,7 @@ var require_runtimeConfig_shared2 = __commonJS({
     exports2.getRuntimeConfig = void 0;
     var httpAuthSchemes_1 = (init_httpAuthSchemes2(), __toCommonJS(httpAuthSchemes_exports));
     var protocols_1 = (init_protocols2(), __toCommonJS(protocols_exports2));
-    var dynamodb_codec_1 = require_dist_cjs26();
+    var dynamodb_codec_1 = require_dist_cjs25();
     var client_1 = (init_client2(), __toCommonJS(client_exports));
     var protocols_2 = (init_protocols(), __toCommonJS(protocols_exports));
     var serde_1 = (init_serde(), __toCommonJS(serde_exports));
@@ -69970,7 +69519,7 @@ var require_runtimeConfig2 = __commonJS({
     var client_1 = (init_client3(), __toCommonJS(client_exports2));
     var httpAuthSchemes_1 = (init_httpAuthSchemes2(), __toCommonJS(httpAuthSchemes_exports));
     var credential_provider_node_1 = require_dist_cjs20();
-    var middleware_endpoint_discovery_1 = require_dist_cjs25();
+    var middleware_endpoint_discovery_1 = require_dist_cjs24();
     var client_2 = (init_client2(), __toCommonJS(client_exports));
     var config_1 = (init_config2(), __toCommonJS(config_exports));
     var retry_1 = (init_retry2(), __toCommonJS(retry_exports));
@@ -70017,12 +69566,12 @@ var require_runtimeConfig2 = __commonJS({
 });
 
 // node_modules/@aws-sdk/client-dynamodb/dist-cjs/index.js
-var require_dist_cjs27 = __commonJS({
+var require_dist_cjs26 = __commonJS({
   "node_modules/@aws-sdk/client-dynamodb/dist-cjs/index.js"(exports2) {
     "use strict";
     var accountIdEndpoint = (init_account_id_endpoint(), __toCommonJS(account_id_endpoint_exports));
     var client$1 = (init_client3(), __toCommonJS(client_exports2));
-    var middlewareEndpointDiscovery = require_dist_cjs25();
+    var middlewareEndpointDiscovery = require_dist_cjs24();
     var core = (init_dist_es(), __toCommonJS(dist_es_exports));
     var client = (init_client2(), __toCommonJS(client_exports));
     var config2 = (init_config2(), __toCommonJS(config_exports));
@@ -70408,7 +69957,7 @@ var require_dist_cjs27 = __commonJS({
       return [endpoints.getEndpointPlugin(config3, Command2.getEndpointParameterInstructions())];
     }).s("DynamoDB_20120810", "RestoreTableToPointInTime", {}).n("DynamoDBClient", "RestoreTableToPointInTimeCommand").sc(schemas_0.RestoreTableToPointInTime$).build() {
     };
-    var ScanCommand = class extends client.Command.classBuilder().ep({
+    var ScanCommand2 = class extends client.Command.classBuilder().ep({
       ...commonParams5,
       ResourceArn: { type: "contextParams", name: "TableName" }
     }).m(function(Command2, cs, config3, o2) {
@@ -70511,7 +70060,7 @@ var require_dist_cjs27 = __commonJS({
     var paginateListImports = core.createPaginator(DynamoDBClient2, ListImportsCommand, "NextToken", "NextToken", "PageSize");
     var paginateListTables = core.createPaginator(DynamoDBClient2, ListTablesCommand, "ExclusiveStartTableName", "LastEvaluatedTableName", "Limit");
     var paginateQuery = core.createPaginator(DynamoDBClient2, QueryCommand, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
-    var paginateScan = core.createPaginator(DynamoDBClient2, ScanCommand, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
+    var paginateScan = core.createPaginator(DynamoDBClient2, ScanCommand2, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
     var checkState$5 = async (client$12, input) => {
       let reason;
       try {
@@ -70775,7 +70324,7 @@ var require_dist_cjs27 = __commonJS({
       QueryCommand,
       RestoreTableFromBackupCommand,
       RestoreTableToPointInTimeCommand,
-      ScanCommand,
+      ScanCommand: ScanCommand2,
       TagResourceCommand,
       TransactGetItemsCommand,
       TransactWriteItemsCommand,
@@ -71139,7 +70688,7 @@ var require_dist_cjs27 = __commonJS({
     exports2.SSEStatus = SSEStatus;
     exports2.SSEType = SSEType;
     exports2.ScalarAttributeType = ScalarAttributeType;
-    exports2.ScanCommand = ScanCommand;
+    exports2.ScanCommand = ScanCommand2;
     exports2.Select = Select;
     exports2.StreamViewType = StreamViewType;
     exports2.TableClass = TableClass;
@@ -71195,13 +70744,13 @@ var require_dist_cjs27 = __commonJS({
 });
 
 // node_modules/@aws-sdk/lib-dynamodb/dist-cjs/index.js
-var require_dist_cjs28 = __commonJS({
+var require_dist_cjs27 = __commonJS({
   "node_modules/@aws-sdk/lib-dynamodb/dist-cjs/index.js"(exports2) {
     "use strict";
     var client = (init_client2(), __toCommonJS(client_exports));
     var client$1 = (init_client3(), __toCommonJS(client_exports2));
-    var utilDynamodb = require_dist_cjs23();
-    var clientDynamodb = require_dist_cjs27();
+    var utilDynamodb = require_dist_cjs22();
+    var clientDynamodb = require_dist_cjs26();
     var core = (init_dist_es(), __toCommonJS(dist_es_exports));
     var SELF = null;
     var ALL_VALUES = {};
@@ -71616,7 +71165,7 @@ var require_dist_cjs28 = __commonJS({
         return async () => handler2(this.clientCommand);
       }
     };
-    var ScanCommand = class extends DynamoDBDocumentClientCommand {
+    var ScanCommand2 = class extends DynamoDBDocumentClientCommand {
       input;
       inputKeyNodes = {
         ScanFilter: {
@@ -71785,7 +71334,7 @@ var require_dist_cjs28 = __commonJS({
       }
     };
     var paginateQuery = core.createPaginator(DynamoDBDocumentClient2, QueryCommand, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
-    var paginateScan = core.createPaginator(DynamoDBDocumentClient2, ScanCommand, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
+    var paginateScan = core.createPaginator(DynamoDBDocumentClient2, ScanCommand2, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
     var DynamoDBDocument = class _DynamoDBDocument extends DynamoDBDocumentClient2 {
       static from(client2, translateConfig) {
         return new _DynamoDBDocument(client2, translateConfig);
@@ -71908,7 +71457,7 @@ var require_dist_cjs28 = __commonJS({
         }
       }
       scan(args, optionsOrCb, cb) {
-        const command = new ScanCommand(args);
+        const command = new ScanCommand2(args);
         if (typeof optionsOrCb === "function") {
           this.send(command, optionsOrCb);
         } else if (typeof cb === "function") {
@@ -71975,12 +71524,139 @@ var require_dist_cjs28 = __commonJS({
     exports2.GetCommand = GetCommand;
     exports2.PutCommand = PutCommand2;
     exports2.QueryCommand = QueryCommand;
-    exports2.ScanCommand = ScanCommand;
+    exports2.ScanCommand = ScanCommand2;
     exports2.TransactGetCommand = TransactGetCommand;
     exports2.TransactWriteCommand = TransactWriteCommand;
     exports2.UpdateCommand = UpdateCommand;
     exports2.paginateQuery = paginateQuery;
     exports2.paginateScan = paginateScan;
+  }
+});
+
+// node_modules/@aws-sdk/s3-request-presigner/dist-cjs/index.js
+var require_dist_cjs28 = __commonJS({
+  "node_modules/@aws-sdk/s3-request-presigner/dist-cjs/index.js"(exports2) {
+    "use strict";
+    var util = (init_util2(), __toCommonJS(util_exports2));
+    var endpoints = (init_endpoints(), __toCommonJS(endpoints_exports));
+    var protocols = (init_protocols(), __toCommonJS(protocols_exports));
+    var signatureV4MultiRegion = require_dist_cjs8();
+    var UNSIGNED_PAYLOAD = "UNSIGNED-PAYLOAD";
+    var SHA256_HEADER = "X-Amz-Content-Sha256";
+    var S3RequestPresigner = class {
+      signer;
+      constructor(options) {
+        const resolvedOptions = {
+          service: options.signingName || options.service || "s3",
+          uriEscapePath: options.uriEscapePath || false,
+          applyChecksum: options.applyChecksum || false,
+          ...options
+        };
+        this.signer = new signatureV4MultiRegion.SignatureV4MultiRegion(resolvedOptions);
+      }
+      presign(requestToSign, { unsignableHeaders = /* @__PURE__ */ new Set(), hoistableHeaders = /* @__PURE__ */ new Set(), unhoistableHeaders = /* @__PURE__ */ new Set(), ...options } = {}) {
+        this.prepareRequest(requestToSign, {
+          unsignableHeaders,
+          unhoistableHeaders,
+          hoistableHeaders
+        });
+        return this.signer.presign(requestToSign, {
+          expiresIn: 900,
+          unsignableHeaders,
+          unhoistableHeaders,
+          ...options
+        });
+      }
+      presignWithCredentials(requestToSign, credentials, { unsignableHeaders = /* @__PURE__ */ new Set(), hoistableHeaders = /* @__PURE__ */ new Set(), unhoistableHeaders = /* @__PURE__ */ new Set(), ...options } = {}) {
+        this.prepareRequest(requestToSign, {
+          unsignableHeaders,
+          unhoistableHeaders,
+          hoistableHeaders
+        });
+        return this.signer.presignWithCredentials(requestToSign, credentials, {
+          expiresIn: 900,
+          unsignableHeaders,
+          unhoistableHeaders,
+          ...options
+        });
+      }
+      prepareRequest(requestToSign, { unsignableHeaders = /* @__PURE__ */ new Set(), unhoistableHeaders = /* @__PURE__ */ new Set(), hoistableHeaders = /* @__PURE__ */ new Set() } = {}) {
+        unsignableHeaders.add("content-type");
+        Object.keys(requestToSign.headers).map((header) => header.toLowerCase()).filter((header) => header.startsWith("x-amz-server-side-encryption")).forEach((header) => {
+          if (!hoistableHeaders.has(header)) {
+            unhoistableHeaders.add(header);
+          }
+        });
+        requestToSign.headers[SHA256_HEADER] = UNSIGNED_PAYLOAD;
+        const currentHostHeader = requestToSign.headers.host;
+        const port = requestToSign.port;
+        const expectedHostHeader = `${requestToSign.hostname}${requestToSign.port != null ? ":" + port : ""}`;
+        if (!currentHostHeader || currentHostHeader === requestToSign.hostname && requestToSign.port != null) {
+          requestToSign.headers.host = expectedHostHeader;
+        }
+      }
+    };
+    var getSignedUrl2 = async (client, command, options = {}) => {
+      let s3Presigner;
+      let region;
+      if (typeof client.config.endpointProvider === "function") {
+        const endpointV2 = await endpoints.getEndpointFromInstructions(command.input, command.constructor, client.config);
+        const authScheme = endpointV2.properties?.authSchemes?.[0];
+        if (authScheme?.name === "sigv4a") {
+          region = authScheme?.signingRegionSet?.join(",");
+        } else {
+          region = authScheme?.signingRegion;
+        }
+        s3Presigner = new S3RequestPresigner({
+          ...client.config,
+          signingName: authScheme?.signingName,
+          region: async () => region
+        });
+      } else {
+        s3Presigner = new S3RequestPresigner(client.config);
+      }
+      const presignInterceptMiddleware = (next, context) => async (args) => {
+        const { request } = args;
+        if (!protocols.HttpRequest.isInstance(request)) {
+          throw new Error("Request to be presigned is not an valid HTTP request.");
+        }
+        delete request.headers["amz-sdk-invocation-id"];
+        delete request.headers["amz-sdk-request"];
+        delete request.headers["x-amz-user-agent"];
+        let presigned2;
+        const presignerOptions = {
+          ...options,
+          signingRegion: options.signingRegion ?? context["signing_region"] ?? region,
+          signingService: options.signingService ?? context["signing_service"]
+        };
+        if (context.s3ExpressIdentity) {
+          presigned2 = await s3Presigner.presignWithCredentials(request, context.s3ExpressIdentity, presignerOptions);
+        } else {
+          presigned2 = await s3Presigner.presign(request, presignerOptions);
+        }
+        return {
+          response: {},
+          output: {
+            $metadata: { httpStatusCode: 200 },
+            presigned: presigned2
+          }
+        };
+      };
+      const middlewareName = "presignInterceptMiddleware";
+      const clientStack = client.middlewareStack.clone();
+      clientStack.addRelativeTo(presignInterceptMiddleware, {
+        name: middlewareName,
+        relation: "before",
+        toMiddleware: "awsAuthMiddleware",
+        override: true
+      });
+      const handler2 = command.resolveMiddleware(clientStack, client.config, {});
+      const { output } = await handler2({ input: command.input });
+      const { presigned } = output;
+      return util.formatUrl(presigned);
+    };
+    exports2.S3RequestPresigner = S3RequestPresigner;
+    exports2.getSignedUrl = getSignedUrl2;
   }
 });
 
@@ -71995,7 +71671,6 @@ var import_serverless_http = __toESM(require_serverless_http(), 1);
 // src/app.ts
 var import_dotenv = __toESM(require_main(), 1);
 var import_express3 = __toESM(require_express2(), 1);
-var import_cors = __toESM(require_lib3(), 1);
 
 // src/routes/uploads.routes.ts
 var import_express = __toESM(require_express2(), 1);
@@ -86516,27 +86191,88 @@ config(en_default());
 
 // src/routes/uploads.routes.ts
 var import_client_s32 = __toESM(require_dist_cjs21(), 1);
-var import_s3_request_presigner = __toESM(require_dist_cjs22(), 1);
 
-// node_modules/dotenv/config.js
-(function() {
-  require_main().config(
-    Object.assign(
-      {},
-      require_env_options(),
-      require_cli_options()(process.argv)
-    )
+// src/services/uploads.service.ts
+var import_lib_dynamodb2 = __toESM(require_dist_cjs27(), 1);
+var import_node_crypto4 = require("node:crypto");
+
+// src/lib/dynamodb.ts
+var import_client_dynamodb = __toESM(require_dist_cjs26(), 1);
+var import_lib_dynamodb = __toESM(require_dist_cjs27(), 1);
+var awsRegion = process.env.AWS_REGION ?? process.env.AWS_REGION_NAME;
+if (!awsRegion) {
+  throw new Error("AWS region is not configured.");
+}
+var dynamoClient = new import_client_dynamodb.DynamoDBClient({
+  region: awsRegion
+});
+var dynamoDocumentClient = import_lib_dynamodb.DynamoDBDocumentClient.from(dynamoClient);
+
+// src/services/uploads.service.ts
+var tableName = process.env.AWS_DYNAMODB_TABLE;
+if (!tableName) {
+  throw new Error("AWS_DYNAMODB_TABLE is not configured in server/.env");
+}
+async function createUploadRecord(input) {
+  const fileId = (0, import_node_crypto4.randomUUID)();
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const baseItem = {
+    pk: `UPLOAD#${fileId}`,
+    sk: "METADATA",
+    entityType: "UPLOAD",
+    fileId,
+    fileName: input.fileName,
+    s3Key: input.s3Key,
+    bucket: input.bucket,
+    rawRowCount: input.rawRowCount,
+    filteredRowCount: input.filteredRowCount,
+    status: "UPLOADED",
+    createdAt: now,
+    updatedAt: now
+  };
+  const item = input.sheetName ? {
+    ...baseItem,
+    sheetName: input.sheetName
+  } : baseItem;
+  await dynamoDocumentClient.send(
+    new import_lib_dynamodb2.PutCommand({
+      TableName: tableName,
+      Item: item
+    })
   );
-})();
+  return item;
+}
+async function getLatestUploadRecord() {
+  const result = await dynamoDocumentClient.send(
+    new import_lib_dynamodb2.ScanCommand({
+      TableName: tableName,
+      FilterExpression: "entityType = :entityType",
+      ExpressionAttributeValues: {
+        ":entityType": "UPLOAD"
+      }
+    })
+  );
+  const items = result.Items ?? [];
+  if (items.length === 0) {
+    return null;
+  }
+  const sortedItems = items.sort((a5, b5) => {
+    return new Date(b5.createdAt).getTime() - new Date(a5.createdAt).getTime();
+  });
+  return sortedItems[0] ?? null;
+}
+
+// src/routes/uploads.routes.ts
+var import_s3_request_presigner = __toESM(require_dist_cjs28(), 1);
 
 // src/lib/s3.ts
 var import_client_s3 = __toESM(require_dist_cjs21(), 1);
-var awsRegion = process.env.AWS_REGION ?? process.env.AWS_REGION_NAME;
-if (!awsRegion) {
-  throw new Error("AWS_REGION is not configured in server/.env");
+var awsRegion2 = process.env.AWS_REGION ?? process.env.AWS_REGION_NAME;
+if (!awsRegion2) {
+  throw new Error("AWS region is not configured.");
 }
 var s3Client = new import_client_s3.S3Client({
-  region: awsRegion
+  region: awsRegion2
 });
 
 // src/routes/uploads.routes.ts
@@ -86576,63 +86312,36 @@ router.post("/presigned-url", async (req, res) => {
     bucket
   });
 });
+router.get("/latest", async (_req, res) => {
+  try {
+    const latestUpload = await getLatestUploadRecord();
+    if (!latestUpload) {
+      return res.status(404).json({
+        error: "No uploaded files found."
+      });
+    }
+    const command = new import_client_s32.GetObjectCommand({
+      Bucket: latestUpload.bucket,
+      Key: latestUpload.s3Key
+    });
+    const downloadUrl = await (0, import_s3_request_presigner.getSignedUrl)(s3Client, command, {
+      expiresIn: 60 * 5
+    });
+    return res.json({
+      upload: latestUpload,
+      downloadUrl
+    });
+  } catch (error52) {
+    console.error(error52);
+    return res.status(500).json({
+      error: "Unable to load latest upload."
+    });
+  }
+});
 var uploads_routes_default = router;
 
 // src/routes/upload-records.routes.ts
 var import_express2 = __toESM(require_express2(), 1);
-
-// src/services/uploads.service.ts
-var import_lib_dynamodb2 = __toESM(require_dist_cjs28(), 1);
-var import_node_crypto4 = require("node:crypto");
-
-// src/lib/dynamodb.ts
-var import_client_dynamodb = __toESM(require_dist_cjs27(), 1);
-var import_lib_dynamodb = __toESM(require_dist_cjs28(), 1);
-var awsRegion2 = process.env.AWS_REGION ?? process.env.AWS_REGION_NAME;
-if (!awsRegion2) {
-  throw new Error("AWS_REGION is not configured in server/.env");
-}
-var dynamoClient = new import_client_dynamodb.DynamoDBClient({
-  region: awsRegion2
-});
-var dynamoDocumentClient = import_lib_dynamodb.DynamoDBDocumentClient.from(dynamoClient);
-
-// src/services/uploads.service.ts
-var tableName = process.env.AWS_DYNAMODB_TABLE;
-if (!tableName) {
-  throw new Error("AWS_DYNAMODB_TABLE is not configured in server/.env");
-}
-async function createUploadRecord(input) {
-  const fileId = (0, import_node_crypto4.randomUUID)();
-  const now = (/* @__PURE__ */ new Date()).toISOString();
-  const baseItem = {
-    pk: `UPLOAD#${fileId}`,
-    sk: "METADATA",
-    entityType: "UPLOAD",
-    fileId,
-    fileName: input.fileName,
-    s3Key: input.s3Key,
-    bucket: input.bucket,
-    rawRowCount: input.rawRowCount,
-    filteredRowCount: input.filteredRowCount,
-    status: "UPLOADED",
-    createdAt: now,
-    updatedAt: now
-  };
-  const item = input.sheetName ? {
-    ...baseItem,
-    sheetName: input.sheetName
-  } : baseItem;
-  await dynamoDocumentClient.send(
-    new import_lib_dynamodb2.PutCommand({
-      TableName: tableName,
-      Item: item
-    })
-  );
-  return item;
-}
-
-// src/routes/upload-records.routes.ts
 var router2 = (0, import_express2.Router)();
 var createUploadRecordSchema = external_exports.object({
   fileName: external_exports.string().min(1),
@@ -86665,14 +86374,6 @@ var upload_records_routes_default = router2;
 // src/app.ts
 import_dotenv.default.config();
 var app = (0, import_express3.default)();
-app.use(
-  (0, import_cors.default)({
-    origin: [
-      "http://localhost:5173",
-      "https://clearflow-data-alerts.vercel.app"
-    ]
-  })
-);
 app.use(import_express3.default.json());
 app.get("/health", (_req, res) => {
   res.json({
@@ -86973,11 +86674,4 @@ serve-static/index.js:
    * Copyright(c) 2014-2016 Douglas Christopher Wilson
    * MIT Licensed
    *)
-
-object-assign/index.js:
-  (*
-  object-assign
-  (c) Sindre Sorhus
-  @license MIT
-  *)
 */

@@ -67,3 +67,30 @@ export async function saveUploadRecord(input: {
 
   return response.json();
 }
+
+export async function getLatestUpload() {
+  const response = await fetch(`${API_BASE_URL}/uploads/latest`);
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to load latest uploaded file.");
+  }
+
+  return response.json() as Promise<{
+    upload: {
+      fileId: string;
+      fileName: string;
+      sheetName?: string;
+      s3Key: string;
+      bucket: string;
+      rawRowCount: number;
+      filteredRowCount: number;
+      createdAt: string;
+      updatedAt: string;
+    };
+    downloadUrl: string;
+  }>;
+}

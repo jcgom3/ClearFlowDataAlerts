@@ -1,7 +1,8 @@
-import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { randomUUID } from "node:crypto";
 import { dynamoDocumentClient } from "../lib/dynamodb.js";
 import type { UploadedFileRecord } from "../types/dynamodb.types.js";
+
 
 const tableName = process.env.AWS_DYNAMODB_TABLE;
 
@@ -54,4 +55,28 @@ export async function createUploadRecord(
   );
 
   return item;
+}
+
+export async function getLatestUploadRecord(): Promise<UploadedFileRecord | null> {
+  const result = await dynamoDocumentClient.send(
+    new ScanCommand({
+      TableName: tableName,
+      FilterExpression: "entityType = :entityType",
+      ExpressionAttributeValues: {
+        ":entityType": "UPLOAD",
+      },
+    })
+  );
+
+  const items = (result.Items ?? []) as UploadedFileRecord[];
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  const sortedItems = items.sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  return sortedItems[0] ?? null;
 }
