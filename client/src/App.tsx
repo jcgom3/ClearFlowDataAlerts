@@ -1,0 +1,243 @@
+import { useState } from "react";
+import { FileUploadPanel } from "./components/upload/FileUploadPanel";
+import { FilteredRowsTable } from "./components/tables/FilteredRowsTable";
+import type { SpreadsheetRow } from "./types/excel.types";
+import {
+  createPresignedUploadUrl,
+  uploadFileToS3,
+  saveUploadRecord,
+} from "./lib/api";
+import { getRowsDateRange } from "./features/excel/getDateRanges";
+import { RowDetailsModal } from "./components/modals/RowDetailsModal";
+
+type UploadedFileState = {
+  file: File;
+  fileName: string;
+  sheetName: string;
+  rawRows: SpreadsheetRow[];
+  filteredRows: SpreadsheetRow[];
+};
+
+function App() {
+  const [uploadedFile, setUploadedFile] = useState<UploadedFileState | null>(null);
+  const [s3UploadStatus, setS3UploadStatus] = useState<string | null>(null);
+  const [activeResultsTab, setActiveResultsTab] = useState<"filtered" | "raw">(
+    "filtered"
+  );
+
+  async function handleSaveFileToS3() {
+    if (!uploadedFile) return;
+
+    setS3UploadStatus("Creating secure upload URL...");
+
+    try {
+      const { uploadUrl, key, bucket } = await createPresignedUploadUrl({
+        fileName: uploadedFile.file.name,
+        contentType:
+          uploadedFile.file.type ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      setS3UploadStatus("Uploading file to S3...");
+
+      await uploadFileToS3({
+        file: uploadedFile.file,
+        uploadUrl,
+      });
+
+      setS3UploadStatus("Saving upload record...");
+
+      await saveUploadRecord({
+        fileName: uploadedFile.fileName,
+        s3Key: key,
+        bucket,
+        sheetName: uploadedFile.sheetName,
+        rawRowCount: uploadedFile.rawRows.length,
+        filteredRowCount: uploadedFile.filteredRows.length,
+      });
+
+      setS3UploadStatus(`File uploaded and saved successfully. S3 key: ${key}`);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "File upload failed.";
+
+      setS3UploadStatus(message);
+    }
+  }
+
+  const rawDateRange = uploadedFile
+    ? getRowsDateRange(uploadedFile.rawRows)
+    : null;
+
+  const filteredDateRange = uploadedFile
+    ? getRowsDateRange(uploadedFile.filteredRows)
+    : null;
+
+  const activeRows =
+    activeResultsTab === "filtered"
+      ? uploadedFile?.filteredRows ?? []
+      : uploadedFile?.rawRows ?? [];
+
+  const activeTitle =
+    activeResultsTab === "filtered"
+      ? 'Rows containing "frame"'
+      : "Raw Results";
+
+  const activeSubtitle =
+    activeResultsTab === "filtered"
+      ? `Showing ${uploadedFile?.filteredRows.length ?? 0} matching rows across ${uploadedFile?.filteredRows[0]
+        ? Object.keys(uploadedFile.filteredRows[0]).length
+        : 0
+      } columns.`
+      : `Showing ${uploadedFile?.rawRows.length ?? 0} total rows across ${uploadedFile?.rawRows[0] ? Object.keys(uploadedFile.rawRows[0]).length : 0
+      } columns.`;
+
+  const [selectedRow, setSelectedRow] = useState<SpreadsheetRow | null>(null);
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mb-8 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800 p-6 shadow-xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">
+            ClearFlow
+          </p>
+
+          <h1 className="mt-2 text-3xl font-bold tracking-tight">
+            Data Alerts Console
+          </h1>
+
+          <p className="mt-2 max-w-3xl text-slate-400">
+            Upload Excel files, filter production data, review results, and send
+            controlled alerts to the right users.
+          </p>
+        </div>
+
+        <div className="grid gap-6">
+          <FileUploadPanel
+            onRowsParsed={(fileData) => {
+              setUploadedFile(fileData);
+              setActiveResultsTab("filtered");
+              setSelectedRow(null);
+              setS3UploadStatus(null);
+            }}
+          />
+
+          {uploadedFile && (
+            <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+              <div>
+                <h2 className="text-lg font-semibold">Upload Summary</h2>
+                <p className="text-sm text-slate-400">
+                  {uploadedFile.fileName} · Sheet: {uploadedFile.sheetName}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleSaveFileToS3}
+                  className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400"
+                >
+                  Save File to S3
+                </button>
+
+                {s3UploadStatus && (
+                  <p className="mt-3 text-sm text-slate-300">
+                    {s3UploadStatus}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                  <p className="text-xs uppercase text-slate-500">Raw Rows</p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {uploadedFile.rawRows.length}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                  <p className="text-xs uppercase text-slate-500">
+                    Filtered Rows
+                  </p>
+                  <p className="mt-2 text-2xl font-bold">
+                    {uploadedFile.filteredRows.length}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                  <p className="text-xs uppercase text-slate-500">Status</p>
+                  <p className="mt-2 text-2xl font-bold text-cyan-300">
+                    Ready
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {uploadedFile && (
+            <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-3 shadow-2xl shadow-black/20">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveResultsTab("filtered")}
+                  className={
+                    activeResultsTab === "filtered"
+                      ? "rounded-2xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950"
+                      : "rounded-2xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+                  }
+                >
+                  Filtered Results
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveResultsTab("raw")}
+                  className={
+                    activeResultsTab === "raw"
+                      ? "rounded-2xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950"
+                      : "rounded-2xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+                  }
+                >
+                  Raw Results
+                </button>
+              </div>
+            </section>
+          )}
+
+          <FilteredRowsTable
+            rows={activeRows}
+            title={activeTitle}
+            subtitle={activeSubtitle}
+            emptyMessage={
+              activeResultsTab === "filtered"
+                ? 'No rows found containing the word "frame".'
+                : "No raw rows found."
+            }
+            highlightTerm={activeResultsTab === "filtered" ? "frame" : undefined}
+            onRowClick={activeResultsTab === "filtered" ? setSelectedRow : undefined}
+            dateRanges={
+              uploadedFile
+                ? [
+                  {
+                    label: "Raw file date range",
+                    value: rawDateRange,
+                  },
+                  {
+                    label: "Filtered frame date range",
+                    value: filteredDateRange,
+                  },
+                ]
+                : []
+            }
+          />
+
+          <RowDetailsModal
+            row={selectedRow}
+            onClose={() => setSelectedRow(null)}
+            highlightTerm="frame"
+          />
+        </div>
+      </section>
+    </main>
+  );
+}
+
+export default App;

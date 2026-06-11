@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["PUT", "POST", "GET"],
+    "AllowedOrigins": ["http://localhost:5173"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
+  }
+]
