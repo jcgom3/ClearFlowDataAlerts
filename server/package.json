@@ -5,10 +5,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
-  },
+  "dev": "tsx watch src/index.ts",
+  "build": "tsc",
+  "build:lambda": "esbuild src/lambda.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/lambda.js",
+  "zip:lambda": "cd dist && zip -r lambda.zip lambda.js",
+  "package:lambda": "npm run build:lambda && npm run zip:lambda"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -23,12 +25,14 @@
     "express": "^5.2.1",
     "prisma": "^7.8.0",
     "resend": "^6.12.4",
+    "serverless-http": "^4.0.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.2",
+    "esbuild": "^0.28.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }
