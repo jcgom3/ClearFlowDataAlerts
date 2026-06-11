@@ -351,6 +351,18 @@ function getColumnWidth(column: string) {
   return COLUMN_WIDTHS[column] ?? DEFAULT_COLUMN_WIDTH;
 }
 
+// function getColumnsFromRows(rows: SpreadsheetRow[]) {
+//   const columnSet = new Set<string>();
+
+//   for (const row of rows) {
+//     Object.keys(row).forEach((key) => columnSet.add(key));
+//   }
+
+//   return Array.from(columnSet);
+// }
+
+const PRIORITY_COLUMNS = ["Job Due Date", "Job Name", "Part Description", "Part", "Job Num"];
+
 function getColumnsFromRows(rows: SpreadsheetRow[]) {
   const columnSet = new Set<string>();
 
@@ -358,7 +370,17 @@ function getColumnsFromRows(rows: SpreadsheetRow[]) {
     Object.keys(row).forEach((key) => columnSet.add(key));
   }
 
-  return Array.from(columnSet);
+  const existingColumns = Array.from(columnSet);
+
+  const priorityColumns = PRIORITY_COLUMNS.filter((column) =>
+    columnSet.has(column)
+  );
+
+  const remainingColumns = existingColumns.filter(
+    (column) => !PRIORITY_COLUMNS.includes(column)
+  );
+
+  return [...priorityColumns, ...remainingColumns];
 }
 
 function formatCellValue(value: SpreadsheetRow[string]) {
