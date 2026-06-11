@@ -32,6 +32,8 @@ function App() {
   null
 );
 
+  const [selectedRow, setSelectedRow] = useState<SpreadsheetRow | null>(null);
+
 
 
 
@@ -157,12 +159,11 @@ function App() {
       : `Showing ${uploadedFile?.rawRows.length ?? 0} total rows across ${uploadedFile?.rawRows[0] ? Object.keys(uploadedFile.rawRows[0]).length : 0
       } columns.`;
 
-  const [selectedRow, setSelectedRow] = useState<SpreadsheetRow | null>(null);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800 p-6 shadow-xl">
+  <main className="min-h-screen w-full overflow-x-hidden bg-slate-950 text-slate-100">
+    <section className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-6 w-full rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 to-slate-800 p-5 shadow-xl sm:p-6">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">
             ClearFlow
           </p>
@@ -177,7 +178,7 @@ function App() {
           </p>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid min-w-0 gap-6">
           <FileUploadPanel
             onRowsParsed={(fileData) => {
               setUploadedFile(fileData);
@@ -194,7 +195,7 @@ function App() {
 )}
 
           {uploadedFile && (
-            <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+            <section className="grid min-w-0 gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-6">
               <div>
                 <h2 className="text-lg font-semibold">Upload Summary</h2>
                 <p className="text-sm text-slate-400">
@@ -244,7 +245,7 @@ function App() {
           )}
 
           {uploadedFile && (
-            <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-3 shadow-2xl shadow-black/20">
+            <section className="w-full min-w-0 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/80 p-3 shadow-2xl shadow-black/20">
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"

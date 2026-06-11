@@ -215,3 +215,31 @@ button {
   font-weight: 600;
   color: #a5f3fc;
 }
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+table {
+  max-width: none;
+}
+
+.data-grid-scroll {
+  max-width: 100%;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 768px) {
+  .data-grid-scroll {
+    max-height: 520px;
+  }
+
+  .data-grid-cell,
+  .data-grid-cell-highlight {
+    font-size: 0.75rem;
+  }
+}

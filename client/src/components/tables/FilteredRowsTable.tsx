@@ -45,7 +45,7 @@
 
 //   if (rows.length === 0) {
 //     return (
-//       <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl shadow-black/20">
+//       <section className="w-full min-w-0 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-2xl shadow-black/20 sm:p-6">
 //         <h2 className="text-xl font-bold text-white">{title}</h2>
 //         <p className="mt-2 text-sm text-slate-400">{emptyMessage}</p>
 //       </section>
@@ -53,7 +53,7 @@
 //   }
 
 //   return (
-//     <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl shadow-black/20">
+//     <section className="w-full min-w-0 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-2xl shadow-black/20 sm:p-6">
 //       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
 //         <div>
 //           {dateRanges.length > 0 && (
@@ -84,7 +84,7 @@
 //         </div>
 //       </div>
 
-//       <div className="overflow-hidden rounded-2xl border border-slate-800">
+//       <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-800">
 //         <div className="max-h-[620px] overflow-auto">
 //           <table className="w-full min-w-[1400px] border-collapse text-left text-sm">
 //             <thead className="sticky top-0 z-10 bg-slate-950 text-xs uppercase tracking-wide text-slate-400">
@@ -209,7 +209,7 @@
 
 //   if (rows.length === 0) {
 //     return (
-//       <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl shadow-black/20">
+//       <section className="w-full min-w-0 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-2xl shadow-black/20 sm:p-6">
 //         <h2 className="text-xl font-bold text-white">{title}</h2>
 //         <p className="mt-2 text-sm text-slate-400">{emptyMessage}</p>
 //       </section>
@@ -217,7 +217,7 @@
 //   }
 
 //   return (
-//     <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl shadow-black/20">
+//     <section className="w-full min-w-0 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-2xl shadow-black/20 sm:p-6">
 //       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
 //         <div className="w-full">
 //           {dateRanges.length > 0 && (
@@ -248,7 +248,7 @@
 //         </div>
 //       </div>
 
-//       <div className="overflow-hidden rounded-2xl border border-slate-800">
+//       <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-800">
 //         <div className="max-h-[620px] overflow-auto">
 //           <table className="table-fixed border-collapse text-left text-sm">
 //             <thead className="sticky top-0 z-10 bg-slate-950 text-xs uppercase tracking-wide text-slate-400">
@@ -388,7 +388,7 @@ export function FilteredRowsTable({
 
   if (rows.length === 0) {
     return (
-      <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl shadow-black/20">
+      <section className="w-full min-w-0 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-2xl shadow-black/20 sm:p-6">
         <h2 className="text-xl font-bold text-white">{title}</h2>
         <p className="mt-2 text-sm text-slate-400">{emptyMessage}</p>
       </section>
@@ -396,7 +396,7 @@ export function FilteredRowsTable({
   }
 
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl shadow-black/20">
+    <section className="w-full min-w-0 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-2xl shadow-black/20 sm:p-6">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div className="w-full">
           {dateRanges.length > 0 && (
@@ -433,8 +433,8 @@ export function FilteredRowsTable({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-800">
-        <div className="data-grid-scroll max-h-[620px] overflow-auto">
+      <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-800">
+        <div className="data-grid-scroll max-h-[620px] w-full max-w-full overflow-auto">
           <table
             className="table-fixed border-collapse text-left text-sm"
             style={{
