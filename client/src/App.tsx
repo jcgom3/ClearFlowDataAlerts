@@ -207,8 +207,9 @@ function App() {
                   onClick={handleSaveFileToS3}
                   className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400"
                 >
-                  Save File to S3
+                  Save File
                 </button>
+                <p className="py-2">Files will be deleted from database after 30 days.</p>
 
                 {s3UploadStatus && (
                   <p className="mt-3 text-sm text-slate-300">
